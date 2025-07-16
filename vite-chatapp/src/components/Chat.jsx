@@ -13,7 +13,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
-export default function Chat({ user }) {
+export default function Chat({ user, flag }) {
+  const [clock, setClock] = useState("");
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [userMap, setUserMap] = useState({});
@@ -22,7 +23,6 @@ export default function Chat({ user }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [clock, setClock] = useState("");
 
   // 🕒 Clock
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function Chat({ user }) {
     return () => unsubscribe();
   }, []);
 
-  // 👤 Fetch users for display
+  // 👤 Load user map
   useEffect(() => {
     const fetchUsers = async () => {
       const snapshot = await getDocs(collection(db, "users"));
@@ -54,19 +54,53 @@ export default function Chat({ user }) {
       setUserMap(map);
     };
     fetchUsers();
-  }, []);
+  }, [flag]);
 
   // ✅ Send Text Message
-  const sendMessage = async (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    await addDoc(collection(db, "messages"), {
-      text,
+
+    // Prevent empty submission
+    if (!text.trim() && !imageFile) return;
+
+    let imageUrl = null;
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      try {
+        const res = await fetch("http://localhost:4000/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        imageUrl = data.url;
+      } catch (err) {
+        console.error("Image upload failed:", err);
+        return;
+      }
+    }
+
+    const messageData = {
       createdAt: serverTimestamp(),
       uid: user.uid,
       email: user.email,
-    });
+    };
+
+    if (text.trim()) {
+      messageData.text = text.trim();
+    }
+
+    if (imageUrl) {
+      messageData.type = "image";
+      messageData.url = imageUrl;
+    }
+
+    await addDoc(collection(db, "messages"), messageData);
+
     setText("");
+    setImageFile(null);
+    setImagePreview("");
   };
 
   // 🗑️ Delete Message (and image if needed)
@@ -98,64 +132,37 @@ export default function Chat({ user }) {
     }
   };
 
-  // 📷 Send Image
-  const handleSendImage = async () => {
-    if (!imageFile) return;
-    const formData = new FormData();
-    formData.append("image", imageFile);
-    try {
-      const res = await fetch("http://localhost:4000/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const { url } = await res.json();
-      await addDoc(collection(db, "messages"), {
-        type: "image",
-        url,
-        createdAt: serverTimestamp(),
-        uid: user.uid,
-        email: user.email,
-      });
-      setImageFile(null);
-      setImagePreview("");
-    } catch (err) {
-      console.error("Image upload failed:", err);
-    }
-  };
-
   // 💬 Render a single message
   const renderMessage = (msg) => {
     const isMine = msg.uid === user.uid;
+
     return (
       <div
         key={msg.id}
-        style={{
-          display: "flex",
-          justifyContent: isMine ? "flex-end" : "flex-start",
-          position: "relative",
-          marginBottom: 8,
-        }}>
+        className={`flex mb-2 ${isMine ? "justify-end" : "justify-start"}`}>
         <div
-          style={{
-            background: isMine ? "#dcf8c6" : "#f1f0f0",
-            color:"#000",
-            padding: 10,
-            borderRadius: 8,
-            maxWidth: "70%",
-            textAlign: isMine ? "right" : "left",
-            position: "relative",
-          }}>
-          <strong>{userMap[msg.uid] || "Unknown"}:</strong>
+          className={`relative p-3 rounded-lg max-w-[70%] text-sm text-black ${
+            isMine ? "bg-green-200 text-right" : "bg-gray-200 text-left"
+          }`}>
+          <strong className="block mb-1 mr-6">
+            {userMap[msg.uid] || "Unknown"}
+          </strong>
           <div>
             {editingMessageId === msg.id ? (
               <>
                 <input
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  style={{ width: "90%" }}
+                  className="w-[90%] p-1 border border-gray-400 rounded"
                 />
-                <button onClick={() => handleEdit(msg.id)}>Save</button>
-                <button onClick={() => setEditingMessageId(null)}>
+                <button
+                  onClick={() => handleEdit(msg.id)}
+                  className="ml-2 text-blue-600">
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingMessageId(null)}
+                  className="ml-2 text-gray-600">
                   Cancel
                 </button>
               </>
@@ -163,7 +170,7 @@ export default function Chat({ user }) {
               <img
                 src={msg.url}
                 alt="sent"
-                style={{ maxWidth: "100%", marginTop: 5, borderRadius: 5 }}
+                className="mt-2 rounded-md max-w-full"
               />
             ) : (
               <span>{msg.text}</span>
@@ -176,32 +183,18 @@ export default function Chat({ user }) {
                 onClick={() =>
                   setOpenMenuId(openMenuId === msg.id ? null : msg.id)
                 }
-                style={{
-                  position: "absolute",
-                  right: 5,
-                  top: 5,
-                  cursor: "pointer",
-                }}>
+                className="absolute top-2 right-2 text-lg cursor-pointer">
                 ⋮
               </div>
               {openMenuId === msg.id && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: 25,
-                    background: "#eee",
-                    padding: 4,
-                    borderRadius: 4,
-                    zIndex: 1,
-                  }}>
+                <div className="absolute top-8 right-0 bg-white shadow-md border p-2 rounded-md z-10">
                   <div
                     onClick={() => {
                       setEditingMessageId(msg.id);
                       setEditText(msg.text);
                       setOpenMenuId(null);
                     }}
-                    style={{ cursor: "pointer" }}>
+                    className="cursor-pointer hover:text-blue-600">
                     ✏️ Edit
                   </div>
                   <div
@@ -209,11 +202,7 @@ export default function Chat({ user }) {
                       handleDelete(msg.id);
                       setOpenMenuId(null);
                     }}
-                    style={{
-                      cursor: "pointer",
-                      color: "red",
-                      marginTop: 4,
-                    }}>
+                    className="cursor-pointer text-red-500 mt-1">
                     🗑️ Delete
                   </div>
                 </div>
@@ -226,63 +215,63 @@ export default function Chat({ user }) {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto" }}>
-      <p className="text-lg">💬 Chat Room</p>
-      <p
-        style={{
-          fontFamily: "'Comic Sans MS', cursive",
-          fontSize: "14px",
-          color: "#555",
-          marginBottom: "10px",
-        }}>
-        ⏰ {clock}
-      </p>
-
-      <div
-        style={{
-          border: "1px solid #ccc",
-          padding: 10,
-          height: 300,
-          overflowY: "scroll",
-          marginBottom: 10,
-        }}>
-        {messages.map(renderMessage)}
-      </div>
-
-      {imagePreview && (
-        <div style={{ marginBottom: 10 }}>
-          <img
-            src={imagePreview}
-            alt="Preview"
-            style={{ maxWidth: "200px", borderRadius: 8 }}
-          />
-          <br />
-          <button onClick={handleSendImage} style={{ marginTop: 5 }}>
-            Send Image
-          </button>
-          <button
-            onClick={() => {
-              setImageFile(null);
-              setImagePreview("");
-            }}
-            style={{ marginLeft: 5, color: "red" }}>
-            Cancel
-          </button>
+    <>
+      <fieldset className="fieldset bg-gray-800 border-none rounded-lg p-4 w-full md:max-w-3/4 lg:max-w-1/3 m-auto">
+        <legend className="fieldset-legend text-lg">💬 Chat Room</legend>
+        <p
+          className="text-gray-400 text-sm mb-2.5"
+          style={{ fontFamily: "'Comic Sans MS', cursive" }}>
+          ⏰ {clock}
+        </p>
+        <div className="rounded-md bg-[#101828] border border-gray-600 overflow-y-scroll mb-[10px] h-[300px] p-[10px]">
+          {messages.map(renderMessage)}
         </div>
-      )}
 
-      <form onSubmit={sendMessage}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type your message..."
-          style={{ width: "75%", padding: 8 }}
-        />
-        <input type="file" accept="image/*" onChange={handleFileSelect} />
-        <button type="submit" style={{ padding: 8 }}>
-          Send
-        </button>
-      </form>
-    </div>
+        <form className="flex" onSubmit={handleSend}>
+          <div className="flex w-full max-w-[320px]! rounded-l-md overflow-hidden border border-gray-600">
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-grow px-4 py-2 bg-transparent focus:outline-none"
+            />
+            <label className="cursor-pointer px-4 border-l border-gray-600 bg-gray-800 text-lg content-center">
+              📎
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="btn btn-soft btn-warning rounded-r-md! rounded-l-none!">
+            Sent
+          </button>
+        </form>
+
+        {imagePreview && (
+          <div className="mb-[10px]">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="max-w-[200px] rounded-md"
+            />
+            <br />
+            <div
+              className="badge badge-soft badge-error cursor-pointer"
+              onClick={() => {
+                setImageFile(null);
+                setImagePreview("");
+              }}>
+              Cancel
+            </div>
+          </div>
+        )}
+      </fieldset>
+    </>
   );
 }
