@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { ToastContainer, toast } from "react-toastify";
 import { db } from "../config/firebase";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function EditProfile({ user, flag, setFlag }) {
   const [name, setName] = useState("");
@@ -17,6 +17,7 @@ export default function EditProfile({ user, flag, setFlag }) {
     loadProfile();
   }, [user.uid]);
 
+  // Save New Name
   const handleSave = async (e) => {
     e.preventDefault();
     try {
@@ -30,12 +31,12 @@ export default function EditProfile({ user, flag, setFlag }) {
 
   return (
     <>
-      <fieldset className="fieldset bg-gray-800 border-none rounded-lg mt-4 p-4 w-full md:max-w-3/4 lg:max-w-1/3 m-auto">
-        <legend className="fieldset-legend text-lg">⚙️ Name Setting</legend>
+      <fieldset className="chatContainer mt-4">
+        <legend className="chatContainerLegend">⚙️ Name Setting</legend>
         <form className="join" onSubmit={handleSave}>
           <input
             type="text"
-            className="input join-item bg-gray-800 rounded-l-md"
+            className="input join-item bg-transparent rounded-l-md focus:border-gray-600"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"

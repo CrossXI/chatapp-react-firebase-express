@@ -6,11 +6,11 @@ export default function AuthForm({ fmInput, setFmInput, handleSubmit, title }) {
       <form onSubmit={handleSubmit} className="text-center text-white">
         
         {/* Email Input */}
-        <div className="input border bg-gray-800 border-gray-600 rounded px-3 py-2 mt-4 mb-2">
-          <IoMailOutline className="text-lg mr-2 text-gray-400" />
+        <div className="authInputDiv mt-4 mb-2">
+          <IoMailOutline className="authInputicon" />
           <input
             type="email"
-            className="bg-transparent outline-none flex-1 text-sm placeholder-gray-500"
+            className="authInputField"
             placeholder="Email"
             value={fmInput.email}
             onChange={(e) =>
@@ -21,11 +21,11 @@ export default function AuthForm({ fmInput, setFmInput, handleSubmit, title }) {
         </div>
 
         {/* Password Input */}
-        <div className="input border bg-gray-800 border-gray-600 rounded px-3 py-2 mt-2 mb-6">
-          <IoLockClosedOutline className="text-lg mr-2 text-gray-400" />
+        <div className="authInputDiv mt-2 mb-6">
+          <IoLockClosedOutline className="authInputicon" />
           <input
             type="password"
-            className="bg-transparent outline-none flex-1 text-sm placeholder-gray-500"
+            className="authInputField"
             placeholder="Password"
             value={fmInput.password}
             onChange={(e) =>

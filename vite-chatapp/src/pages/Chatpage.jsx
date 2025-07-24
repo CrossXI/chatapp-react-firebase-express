@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { auth } from "../config/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import Chat from "../components/Chat";
-import EditProfile from "../components/EditProfile";
 import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
+import ChatRoom from "../components/ChatRoom";
+import EditProfile from "../components/EditProfile";
 
 export default function Chatpage() {
   const [user, setUser] = useState(null);
@@ -41,7 +41,7 @@ export default function Chatpage() {
           </button>
         </div>
         <div className="divider" />
-        <Chat user={user} flag={flag} />
+        <ChatRoom user={user} flag={flag} />
         <EditProfile user={user} flag={flag} setFlag={setFlag} />
       </div>
     </>

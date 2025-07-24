@@ -1,6 +1,4 @@
 import { useState } from "react";
-import AuthForm from "../components/AuthForm";
-import { ToastContainer, toast } from "react-toastify";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -8,6 +6,8 @@ import {
 import { auth, db } from "../config/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router";
+import { ToastContainer, toast } from "react-toastify";
+import AuthForm from "../components/AuthForm";
 
 export default function Authpage() {
   const navigate = useNavigate();
@@ -46,28 +46,22 @@ export default function Authpage() {
 
   return (
     <>
-      <div className="h-screen flex justify-center items-center text-white">
-        <div className="w-full max-w-md bg-gray-800 rounded-2xl p-6 shadow-lg">
+      <div className="authContainer">
+        <div className="authCard">
           
           {/* Tabs */}
-          <div className="flex mb-4 space-x-2">
+          <div className="authTab">
             <button
               onClick={() => setActiveTab("login")}
-              className={`flex-1 py-2 rounded-sm font-semibold transition-colors
-              ${
-                activeTab === "login"
-                  ? "bg-[#fcb70c] text-gray-900"
-                  : "bg-gray-900 text-gray-400 hover:text-white"
-              }`}>
+              className={`authTabMethod
+              ${activeTab === "login" ? "tab_Selected" : "tab_NotSelected"}`}>
               Login
             </button>
             <button
               onClick={() => setActiveTab("register")}
-              className={`flex-1 py-2 rounded-sm font-semibold transition-colors
+              className={`authTabMethod
               ${
-                activeTab === "register"
-                  ? "bg-[#fcb70c] text-gray-900"
-                  : "bg-gray-900 text-gray-400 hover:text-white"
+                activeTab === "register" ? "tab_Selected" : "tab_NotSelected"
               }`}>
               Register
             </button>

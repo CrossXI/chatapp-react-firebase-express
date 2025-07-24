@@ -15,3 +15,54 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/*============================================================================*/
+.authContainer {
+  @apply h-screen flex justify-center items-center text-white;
+}
+.authCard {
+  @apply w-full max-w-md bg-gray-800 rounded-2xl p-6 shadow-lg;
+}
+.authTab {
+  @apply flex mb-4 space-x-2;
+}
+.authTabMethod {
+  @apply flex-1 py-2 rounded-sm font-semibold transition-colors;
+}
+.tab_Selected {
+  @apply bg-[#fcb70c] text-gray-900;
+}
+.tab_NotSelected {
+  @apply bg-gray-900 text-gray-400 hover:text-white;
+}
+.authInputDiv {
+  @apply input border bg-gray-800 border-gray-600 rounded px-3 py-2;
+}
+.authInputField {
+  @apply bg-transparent outline-none flex-1 text-sm placeholder-gray-500;
+}
+.authInputicon {
+  @apply text-lg mr-2 text-gray-400;
+}
+/*============================================================================*/
+.chatContainer {
+  @apply fieldset bg-gray-800 border-none rounded-lg p-4 w-full md:max-w-3/4 lg:max-w-1/3 m-auto;
+}
+.chatContainerLegend {
+  @apply fieldset-legend text-lg;
+}
+.chatRoom {
+  @apply rounded-md bg-[#101828] border border-gray-600 overflow-y-scroll mb-[10px] h-[300px] p-[10px];
+}
+.chatInputDiv {
+  @apply flex w-full max-w-[320px] rounded-l-md border border-gray-600 focus-within:outline-2  focus-within:outline-white focus-within:outline-offset-2 z-10;
+}
+.chatInputField {
+  @apply flex-grow px-4 py-2 bg-transparent focus:outline-0;
+}
+.chatInputFile {
+  @apply cursor-pointer px-4 border-l border-gray-600 bg-gray-800 text-lg content-center;
+}
+.fileCancel {
+  @apply badge badge-soft badge-error cursor-pointer;
+}
+/*============================================================================*/
